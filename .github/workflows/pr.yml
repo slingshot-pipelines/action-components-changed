@@ -18,14 +18,14 @@ concurrency:
 
 jobs:
 
-  lint:
-    uses: slingshot-pipelines/workflows/.github/workflows/check-github-actions.yml@check-github-actions/v0
+  lint-and-docs:
+    uses: slingshot-pipelines/workflows/.github/workflows/check-github-action.yml@check-github-action/v0
     with:
       COMPONENT: action
     secrets: inherit
 
   pr-ready:
-    needs: lint
+    needs: lint-and-docs
     runs-on: ubuntu-latest
     steps:
       -
