@@ -12,10 +12,10 @@ outputs:
     value: ${{ steps.changes-by-type.outputs.changed-components }}
     description: A JSON list of changed component names
   changed-component-types:
-    value: ${{ steps.changes-by-type.outputs.types }}
+    value: ${{ steps.changes-by-type.outputs.changed-component-types }}
     description: Changed component types
   changed-components-by-type:
-    value: ${{ steps.changes-by-type.outputs.by-type }}
+    value: ${{ steps.changes-by-type.outputs.changed-components-by-type }}
     description: Changed components by type
 
 runs:
@@ -71,7 +71,7 @@ runs:
         echo "changed-components=$CHANGES" | tee -a "$GITHUB_OUTPUT"
 
         CHANGED_COMPONENTS_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
-        echo "changed-components-by-type=$CHANGED_COMPONENTS_BY_TYPE" >> "$GITHUB_OUTPUT"
+        echo "changed-components-by-type=$CHANGED_COMPONENTS_BY_TYPE" | tee -a "$GITHUB_OUTPUT"
 
         CHANGED_TYPES=$(echo "$CHANGED_COMPONENTS_BY_TYPE" | jq -rc 'to_entries | map(.key)')
         echo "changed-component-types=$CHANGED_TYPES" | tee -a "$GITHUB_OUTPUT"
