@@ -9,7 +9,7 @@ inputs:
 
 outputs:
   changed-components:
-    value: ${{ steps.all-components.outputs.all || steps.detect-changes.outputs.changes }}
+    value: ${{ steps.changes-by-type.outputs.changed-components }}
     description: A JSON list of changed component names
   changed-component-types:
     value: ${{ steps.changes-by-type.outputs.types }}
@@ -35,7 +35,10 @@ runs:
         # List all components
 
         ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
-        echo "all-components=$ALL_COMPONENTS_JSON | tee -a "$GITHUB_OUTPUT"
+
+        echo "::debug::All components: $ALL_COMPONENTS_JSON"
+
+        echo "all-components=$ALL_COMPONENTS_JSON >> "$GITHUB_OUTPUT"
     -
       shell: bash
       id: construct-path-filters
@@ -46,7 +49,9 @@ runs:
         # Construct path filters
 
         FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
-        echo "path-filters=$FILTERS" | tee -a "$GITHUB_OUTPUT"
+        echo "::debug::Path filters: $FILTERS"
+
+        echo "path-filters=$FILTERS" >> tee -a "$GITHUB_OUTPUT"
     -
       name: Detect module changes
       if: ${{ inputs.all != 'true' }}
@@ -63,8 +68,10 @@ runs:
       run: |
         # Filter changed components by type
 
-        CHANGED_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
-        TYPES=$(echo "$CHANGED_BY_TYPE" | jq -rc 'to_entries | map(.key)')
+        echo "changed-components=$CHANGES" | tee -a "$GITHUB_OUTPUT"
 
-        echo "changed-component-types=$TYPES" | tee -a "$GITHUB_OUTPUT"
-        echo "changed-components-by-type=$CHANGED_BY_TYPE" >> "$GITHUB_OUTPUT"
+        CHANGED_COMPONENTS_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
+        echo "changed-components-by-type=$CHANGED_COMPONENTS_BY_TYPE" >> "$GITHUB_OUTPUT"
+
+        CHANGED_TYPES=$(echo "$CHANGED_COMPONENTS_BY_TYPE" | jq -rc 'to_entries | map(.key)')
+        echo "changed-component-types=$CHANGED_TYPES" | tee -a "$GITHUB_OUTPUT"
