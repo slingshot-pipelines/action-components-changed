@@ -33,12 +33,9 @@ runs:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.COMPONENTS }}
       run: |
         # List all components
-        echo "::group::List all components"
-        ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
-        echo "$ALL_COMPONENTS_JSON"
-        echo "::endgroup::"
 
-        echo "all=$ALL_COMPONENTS_JSON >> "$GITHUB_OUTPUT"
+        ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
+        echo "all=$ALL_COMPONENTS_JSON | tee -a "$GITHUB_OUTPUT"
     -
       shell: bash
       id: construct-path-filters
@@ -47,12 +44,9 @@ runs:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
       run: |
         # Construct path filters
-        echo "::group::Construct path filters"
-        FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
-        echo "$FILTERS"
-        echo "::endgroup::"
 
-        echo "filters=$FILTERS" >> "$GITHUB_OUTPUT"
+        FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
+        echo "filters=$FILTERS" | tee -a "$GITHUB_OUTPUT"
     -
       name: Detect module changes
       if: ${{ inputs.all != 'true' }}
