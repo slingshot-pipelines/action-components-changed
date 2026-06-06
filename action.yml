@@ -35,7 +35,7 @@ runs:
         # List all components
 
         ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
-        echo "all=$ALL_COMPONENTS_JSON | tee -a "$GITHUB_OUTPUT"
+        echo "all-components=$ALL_COMPONENTS_JSON | tee -a "$GITHUB_OUTPUT"
     -
       shell: bash
       id: construct-path-filters
@@ -46,30 +46,25 @@ runs:
         # Construct path filters
 
         FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
-        echo "filters=$FILTERS" | tee -a "$GITHUB_OUTPUT"
+        echo "path-filters=$FILTERS" | tee -a "$GITHUB_OUTPUT"
     -
       name: Detect module changes
       if: ${{ inputs.all != 'true' }}
       uses: dorny/paths-filter@v4
       id: detect-changes
       with:
-        filters: ${{ steps.construct-path-filters.outputs.filters }}
+        filters: ${{ steps.construct-path-filters.outputs.path-filters }}
     -
       id: changes-by-type
       shell: bash
       env:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
-        CHANGES: ${{ steps.all-components.outputs.all || steps.detect-changes.outputs.changes }}
+        CHANGES: ${{ steps.all-components.outputs.all-components || steps.detect-changes.outputs.changes }}
       run: |
         # Filter changed components by type
-        echo "::group::Filter changes by type"
 
         CHANGED_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
-        echo "$CHANGED_BY_TYPE" | jq '.'
-
-        echo "::endgroup::"
-
         TYPES=$(echo "$CHANGED_BY_TYPE" | jq -rc 'to_entries | map(.key)')
 
-        echo "types=$TYPES" >> "$GITHUB_OUTPUT"
-        echo "by-type=$CHANGED_BY_TYPE" >> "$GITHUB_OUTPUT"
+        echo "changed-component-types=$TYPES" | tee -a "$GITHUB_OUTPUT"
+        echo "changed-components-by-type=$CHANGED_BY_TYPE" >> "$GITHUB_OUTPUT"
