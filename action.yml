@@ -30,7 +30,7 @@ runs:
       shell: bash
       if: ${{ inputs.all == 'true' }}
       env:
-        COMPONENTS_INFO: ${{ steps.components-info.outputs.COMPONENTS }}
+        COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
       run: |
         # List all components
 
