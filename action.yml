@@ -24,7 +24,7 @@ runs:
     -
       name: Get components info
       id: components-info
-      uses: slingshot-pipelines/action-components-info@v0
+      uses: slingshot-pipelines/action-components-info@debug-empty-components
     -
       id: all-components
       shell: bash
