@@ -9,7 +9,7 @@ inputs:
 
 outputs:
   changed-components:
-    value: ${{ steps.all-components.outputs.all || steps.detect-changes.outputs.changes }}
+    value: ${{ steps.changes-by-type.outputs.changed-components }}
     description: A JSON list of changed component names
   changed-component-types:
     value: ${{ steps.changes-by-type.outputs.types }}
@@ -24,7 +24,7 @@ runs:
     -
       name: Get components info
       id: components-info
-      uses: slingshot-pipelines/action-components-info@v0
+      uses: slingshot-pipelines/action-components-info@v1
     -
       id: all-components
       shell: bash
@@ -33,12 +33,12 @@ runs:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
       run: |
         # List all components
-        echo "::group::List all components"
-        ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
-        echo "$ALL_COMPONENTS_JSON"
-        echo "::endgroup::"
 
-        echo "all=$ALL_COMPONENTS_JSON >> "$GITHUB_OUTPUT"
+        ALL_COMPONENTS_JSON=$("${{ github.action_path }}/scripts/all-components.sh")
+
+        echo "::debug::All components: $ALL_COMPONENTS_JSON"
+
+        echo "all-components=$ALL_COMPONENTS_JSON >> "$GITHUB_OUTPUT"
     -
       shell: bash
       id: construct-path-filters
@@ -47,35 +47,31 @@ runs:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
       run: |
         # Construct path filters
-        echo "::group::Construct path filters"
-        FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
-        echo "$FILTERS"
-        echo "::endgroup::"
 
-        echo "filters=$FILTERS" >> "$GITHUB_OUTPUT"
+        FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
+        echo "::debug::Path filters: $FILTERS"
+
+        echo "path-filters=$FILTERS" >> "$GITHUB_OUTPUT"
     -
       name: Detect module changes
       if: ${{ inputs.all != 'true' }}
       uses: dorny/paths-filter@v4
       id: detect-changes
       with:
-        filters: ${{ steps.construct-path-filters.outputs.filters }}
+        filters: ${{ steps.construct-path-filters.outputs.path-filters }}
     -
       id: changes-by-type
       shell: bash
       env:
         COMPONENTS_INFO: ${{ steps.components-info.outputs.info }}
-        CHANGES: ${{ steps.all-components.outputs.all || steps.detect-changes.outputs.changes }}
+        CHANGES: ${{ steps.all-components.outputs.all-components || steps.detect-changes.outputs.changes }}
       run: |
         # Filter changed components by type
-        echo "::group::Filter changes by type"
 
-        CHANGED_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
-        echo "$CHANGED_BY_TYPE" | jq '.'
+        echo "changed-components=$CHANGES" | tee -a "$GITHUB_OUTPUT"
 
-        echo "::endgroup::"
+        CHANGED_COMPONENTS_BY_TYPE=$("${{ github.action_path }}/scripts/changes-by-type.sh")
+        echo "changed-components-by-type=$CHANGED_COMPONENTS_BY_TYPE" >> "$GITHUB_OUTPUT"
 
-        TYPES=$(echo "$CHANGED_BY_TYPE" | jq -rc 'to_entries | map(.key)')
-
-        echo "types=$TYPES" >> "$GITHUB_OUTPUT"
-        echo "by-type=$CHANGED_BY_TYPE" >> "$GITHUB_OUTPUT"
+        CHANGED_TYPES=$(echo "$CHANGED_COMPONENTS_BY_TYPE" | jq -rc 'to_entries | map(.key)')
+        echo "changed-component-types=$CHANGED_TYPES" | tee -a "$GITHUB_OUTPUT"

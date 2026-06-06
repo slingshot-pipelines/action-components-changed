@@ -20,7 +20,7 @@ while IFS='' read -r COMPONENT && [[ -n "$COMPONENT" ]]; do
         continue
     fi
 
-    COMPONENT_PATHS=$(echo "$COMPONENT_INFO" | jr -rc '.paths // []')
+    COMPONENT_PATHS=$(echo "$COMPONENT_INFO" | jq -rc '.paths // []')
     if [[ "$COMPONENT_PATHS" != '[]' ]]; then
         echo "$COMPONENT:"
         echo "$COMPONENT_PATHS" | yq -o=yaml -P 'map("\(.)/**")'

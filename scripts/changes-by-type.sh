@@ -8,7 +8,7 @@ CHANGES_BY_TYPE=$(echo "$CHANGED_COMPONENTS" \
     | jq -rc \
         'map(.) |
         group_by(.type) |
-        map({ key: .[0].type, value: . }) |
+        map({ key: .[0].type, value: (. | map(.component)) }) |
         from_entries')
 
 printf '%s' "$CHANGES_BY_TYPE"
