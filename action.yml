@@ -51,7 +51,7 @@ runs:
         FILTERS=$("${{ github.action_path }}/scripts/path-filters.sh" | yq -o=json -I0 '.')
         echo "::debug::Path filters: $FILTERS"
 
-        echo "path-filters=$FILTERS" >> tee -a "$GITHUB_OUTPUT"
+        echo "path-filters=$FILTERS" >> "$GITHUB_OUTPUT"
     -
       name: Detect module changes
       if: ${{ inputs.all != 'true' }}
