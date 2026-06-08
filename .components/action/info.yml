@@ -1,5 +1,6 @@
 component: action
 type: github-action
 
-paths:
-  - '.'
+path: .
+action-root: .
+source-language: composite
