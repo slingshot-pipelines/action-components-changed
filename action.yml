@@ -38,7 +38,7 @@ runs:
 
         echo "::debug::All components: $ALL_COMPONENTS_JSON"
 
-        echo "all-components=$ALL_COMPONENTS_JSON >> "$GITHUB_OUTPUT"
+        echo "all-components=$ALL_COMPONENTS_JSON" >> "$GITHUB_OUTPUT"
     -
       shell: bash
       id: construct-path-filters
